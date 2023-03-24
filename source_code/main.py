@@ -16,10 +16,8 @@ if __name__ == "__main__":
     training_datagenerator = BTSDataset(**config["Training_Dataset"])
     validation_datagenerator = BTSDataset(**config["Validation_Dataset"])
     test_datagenerator = BTSDataset(**config["Test_Dataset"])
-    training_dataloader = torch.utils.data.DataLoader(training_datagenerator, batch_size=1,
+    training_dataloader = torch.utils.data.DataLoader(training_datagenerator, batch_size=4,
                                                       shuffle=True)
     trainer = Trainer(**config["Trainer"], model=model, weights_save_folder=config["save_folder"])
     model_weights, trained_model = trainer(training_dataloader, training_dataloader)
     print("")
-
-

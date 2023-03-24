@@ -2,6 +2,7 @@ from tqdm import tqdm
 import torch
 import os
 import numpy as np
+import gc
 from source_code.utilities.utils import check_path, instantiate_class, instantiate_attribute
 
 
@@ -27,30 +28,20 @@ class Trainer:
             training_loss = []
             for image, label in tqdm(training_dataloader):
                 self.optimizer.zero_grad()
-                with torch.autocast(device):
-                    image = image.cuda().to(device)
-                    probabilities = self.model(image)
-                # probabilities = self.model(image)
-                # self.loss(probabilities, label.cuda().to(device))
-                    training_loss.append(self.loss(probabilities, label.cuda().to(device)))
-                # self.loss(probabilities, label)
+                image = image.cuda().to(device)
+                probabilities = self.model(image)
+                loss = self.loss(probabilities, label.cuda().to(device))
+                loss.backward()
+                training_loss.append(loss.detach().cpu())
                 self.optimizer.step()
-                image = image.detach().cpu()
-                probabilities = probabilities.detach().cpu()
-                label = label.detach().cpu()
-                del image, label, probabilities
-                torch.cuda.empty_cache()
-            print("Average training loss: ", np.avg(training_loss))
+            print("Average training loss: ", np.average(training_loss))
             validation_loss = []
             for image, label in tqdm(validation_dataloader):
                 with torch.no_grad():
                     image = image.cuda().to(device)
                     probabilities = self.model(image)
-                    del image
-                    validation_loss.append(self.loss(probabilities, label).cpu())
-                    del probabilities, image, label
-                    torch.cuda.empty_cache()
-            print("Average validation loss: ", np.avg(validation_loss))
+                    validation_loss.append(self.loss(probabilities, label.cuda().to(device)).cpu())
+            print("Average validation loss: ", np.average(validation_loss))
             if np.average(validation_loss) < average_val_loss:
                 self.best_model_weights = self.model.state_dict()
                 average_val_loss = np.average(validation_loss)

@@ -3,13 +3,46 @@ import nibabel as nib
 import numpy as np
 import os
 import glob
+import cv2
 import torchvision.transforms as transforms
 from source_code.utilities.utils import text_file_reader
 
 
+# class BTSDataset(torch.utils.data.Dataset):
+#     def __init__(self, patient_data_list_path, no_classes=4):
+#         patient_data_list = text_file_reader(patient_data_list_path)
+#         self.patient_flair_scans_list = [glob.glob(os.path.join(i, "*_flair.nii.gz"))[0] for i in patient_data_list]
+#         self.patient_t1ce_scans_list = [glob.glob(os.path.join(i, "*_t1ce.nii.gz"))[0] for i in patient_data_list]
+#         self.patient_t2_scans_list = [glob.glob(os.path.join(i, "*_t2.nii.gz"))[0] for i in patient_data_list]
+#         self.patient_seg_scans_list = [glob.glob(os.path.join(i, "*_seg.nii.gz"))[0] for i in patient_data_list]
+#         self.transform = transforms.ToTensor()
+#         self.no_classes = no_classes
+#
+#     def __len__(self):
+#         return len(self.patient_flair_scans_list)
+#
+#     def __getitem__(self, idx):
+#         t1ce_scan = self.transform(np.asarray(nib.load(self.patient_t1ce_scans_list[idx]).get_fdata())[:, :, 5: -6])
+#         t2_scan = self.transform(np.asarray(nib.load(self.patient_t2_scans_list[idx]).get_fdata())[:, :, 5: -6])
+#         flair_scan = self.transform(np.asarray(nib.load(self.patient_flair_scans_list[idx]).get_fdata())[:, :, 5: -6])
+#         seg_label = np.asarray(nib.load(self.patient_seg_scans_list[idx]).get_fdata()[:, :, 5: -6])
+#         seg_label[seg_label == 4] = 3
+#         seg_label = self.transform(seg_label)
+#         seg_label_ohe = torch.nn.functional.one_hot(seg_label.to(torch.int64), self.no_classes)
+#         seg_label_ohe = torch.moveaxis(seg_label_ohe, -1, 0)
+#         image_scans_stacked = torch.stack([t1ce_scan, t2_scan, flair_scan])
+#         return image_scans_stacked.to(torch.float32), seg_label_ohe.to(torch.float32)
+
+
+def resize_3d_image(original_img, size):
+    resized_img = [cv2.resize(original_img[:, :, i], size) for i in range(original_img.shape[2])]
+    resized_img = np.moveaxis(np.stack(resized_img), 0, -1)
+    return resized_img
+
+
 class BTSDataset(torch.utils.data.Dataset):
     def __init__(self, patient_data_list_path, no_classes=4):
-        patient_data_list = text_file_reader(patient_data_list_path)
+        patient_data_list = sorted(text_file_reader(patient_data_list_path))
         self.patient_flair_scans_list = [glob.glob(os.path.join(i, "*_flair.nii.gz"))[0] for i in patient_data_list]
         self.patient_t1ce_scans_list = [glob.glob(os.path.join(i, "*_t1ce.nii.gz"))[0] for i in patient_data_list]
         self.patient_t2_scans_list = [glob.glob(os.path.join(i, "*_t2.nii.gz"))[0] for i in patient_data_list]
@@ -21,16 +54,16 @@ class BTSDataset(torch.utils.data.Dataset):
         return len(self.patient_flair_scans_list)
 
     def __getitem__(self, idx):
-        t1ce_scan = self.transform(np.asarray(nib.load(self.patient_t1ce_scans_list[idx]).get_fdata())[:, :, 5: -6])
-        t2_scan = self.transform(np.asarray(nib.load(self.patient_t2_scans_list[idx]).get_fdata())[:, :, 5: -6])
-        flair_scan = self.transform(np.asarray(nib.load(self.patient_flair_scans_list[idx]).get_fdata())[:, :, 5: -6])
-        seg_label = np.asarray(nib.load(self.patient_seg_scans_list[idx]).get_fdata()[:, :, 5: -6])
+        t1ce_scan = self.transform(resize_3d_image(np.asarray(nib.load(self.patient_t1ce_scans_list[idx]).get_fdata())[:, :, 5: -6], (128 ,128)))
+        t2_scan = self.transform(resize_3d_image(np.asarray(nib.load(self.patient_t2_scans_list[idx]).get_fdata())[:, :, 5: -6], (128 ,128)))
+        flair_scan = self.transform(resize_3d_image(np.asarray(nib.load(self.patient_flair_scans_list[idx]).get_fdata())[:, :, 5: -6], (128 ,128)))
+        seg_label = resize_3d_image(np.asarray(nib.load(self.patient_seg_scans_list[idx]).get_fdata()[:, :, 5: -6]), (128 ,128))
         seg_label[seg_label == 4] = 3
         seg_label = self.transform(seg_label)
         seg_label_ohe = torch.nn.functional.one_hot(seg_label.to(torch.int64), self.no_classes)
-        seg_label_ohe = torch.moveaxis(seg_label_ohe, -1, 0)
-        image_scans_stacked = torch.stack([t1ce_scan, t2_scan, flair_scan])
-        return image_scans_stacked.to(torch.float32), seg_label_ohe.to(torch.float32)
+        seg_label_ohe = torch.moveaxis(seg_label_ohe, -1, 0).to(torch.float32)
+        image_scans_stacked = torch.stack([t1ce_scan, t2_scan, flair_scan]).to(torch.float32)
+        return image_scans_stacked, seg_label_ohe
 
 
 if __name__ == "__main1__":

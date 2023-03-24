@@ -18,6 +18,8 @@ from monai.networks.blocks import UnetrBasicBlock, UnetrPrUpBlock, UnetrUpBlock
 from monai.networks.blocks import UnetOutBlock
 from monai.networks.nets import ViT
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
 
 class UNETR(nn.Module):
     """
@@ -212,6 +214,7 @@ class UNETR(nn.Module):
             self.vit.norm.weight.copy_(weights["state_dict"]["module.transformer.norm.weight"])
             self.vit.norm.bias.copy_(weights["state_dict"]["module.transformer.norm.bias"])
 
+    # @torch.autocast(device)
     def forward(self, x_in):
         x, hidden_states_out = self.vit(x_in)
         enc1 = self.encoder1(x_in)
