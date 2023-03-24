@@ -8,9 +8,9 @@ from source_code.models.unetr import UNETR
 from source_code.utilities.utils import text_file_writer
 
 
-if __name__ == "__main1__":
-    dataset_source_folder = "dataset/BRaTS2021_Training_Data"
-    sample_size = 100
+if __name__ == "__main__":
+    dataset_source_folder = "dataset/brats_train_10_data"
+    sample_size = 10
     save_path = "dataset/lists/sample_%d.txt" % sample_size
     patient_folders_list = sorted(os.listdir(dataset_source_folder))
     patient_folders_list = [os.path.join(dataset_source_folder, i) for i in patient_folders_list]
