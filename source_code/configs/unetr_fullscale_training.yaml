@@ -1,22 +1,22 @@
-save_folder: /content/Experiemnts/test #Experiments/test
+save_folder: /content/Experiemnts/Baseline_unetr #Experiments/test
 
 Training_Dataset:
   #patient_data_list_path: "dataset/lists/sample_100.txt"
-  patient_data_list_path: "dataset/lists/sample_100.txt"
+  patient_data_list_path: "/content/drive/MyDrive/Personal/MS/Brain_Tumor_segmentaion3D/dataset/lists/train_val_test_splits/train_split.txt"
   no_classes: 4
-  src_folder: "/content/drive/MyDrive/ECE542/Brain_Tumor_segmentaion3D"
+  #src_folder: "/content/drive/MyDrive/ECE542/Brain_Tumor_segmentaion3D"
 
 Validation_Dataset:
   #patient_data_list_path: "dataset/lists/sample_100.txt"
-  patient_data_list_path: "dataset/lists/sample_100.txt"
+  patient_data_list_path: "/content/drive/MyDrive/Personal/MS/Brain_Tumor_segmentaion3D/dataset/lists/train_val_test_splits/val_split.txt"
   no_classes: 4
-  src_folder: "/content/drive/MyDrive/ECE542/Brain_Tumor_segmentaion3D"
+  #src_folder: "/content/drive/MyDrive/ECE542/Brain_Tumor_segmentaion3D"
 
 Test_Dataset:
   #patient_data_list_path: "dataset/lists/sample_100.txt"
-  patient_data_list_path: "dataset/lists/sample_100.txt"
+  patient_data_list_path: "/content/drive/MyDrive/Personal/MS/Brain_Tumor_segmentaion3D/dataset/lists/train_val_test_splits/test_split.txt"
   no_classes: 4
-  src_folder: "/content/drive/MyDrive/ECE542/Brain_Tumor_segmentaion3D"
+  #src_folder: "/content/drive/MyDrive/ECE542/Brain_Tumor_segmentaion3D"
 
 Model:
   in_channels: 3
@@ -40,7 +40,7 @@ Trainer:
       include_background: True
       to_onehot_y: True
       sigmoid: False
-      softmax: True #False
+      softmax: True
       #other_act: None
       squared_pred: False
       jaccard: False

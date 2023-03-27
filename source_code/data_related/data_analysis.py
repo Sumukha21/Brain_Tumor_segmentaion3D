@@ -47,17 +47,16 @@ class VisualizePatientData:
         self.image_types = ["flair", "seg", "t1", "t1ce", "t2"]
         self.cmap_list = ["gray", "BuPu", "gray", "gray", "gray"]
         self.i = img_type_id
-        self.fig = plt.figure(figsize=(1, 1));
+        self.fig = plt.figure(figsize=(1, 1))
 
     def visualize_brain_scans(self, cube_path):
         def create_display(layer):
             self.fig.add_subplot(3, 2, self.i + 1)
-            plt.imshow(self.scans[:, :, layer], cmap=self.cmap_list[self.i]);
+            plt.imshow(self.scans[:, :, layer], cmap=self.cmap_list[self.i])
             plt.axis('off')
             return layer
         self.scans = np.asarray(nib.load(cube_path).get_fdata())
-        print(self.scans.shape)
-        interact(create_display, layer=(0, self.scans.shape[2] - 1));
+        interact(create_display, layer=(0, self.scans.shape[2] - 1))
 
     def __call__(self, idx):
         data_path = os.path.join(self.patient_data_list[idx],

@@ -13,10 +13,7 @@ def compute_class_volumes(patient_folder_list):
     enhancing_tumor = []
     cube_size = 240 * 240 * 155
     for i in tqdm(patient_folder_list):
-        if i.endswith("355"):
-            patient_label_data_path = "/kaggle/input/brain-tumor-segmentation-in-mri-brats-2015/MICCAI_BraTS2020_TrainingData/BraTS20_Training_355/W39_1998.09.19_Segm.nii"
-        else:
-            patient_label_data_path = os.path.join(i, "BraTS20_Training_%03d_seg.nii" % int(i.split("_")[-1]))
+        patient_label_data_path = os.path.join(i, "BraTS2021_%05d_seg.nii.gz" % int(i.split("_")[-1]))
         patient_label_data = nib.load(patient_label_data_path).get_fdata()
         core_tumor.append((len(np.where(patient_label_data == 1)[0]) / cube_size) * 100)
         peritumoral_tissue.append((len(np.where(patient_label_data == 2)[0]) / cube_size) * 100)
@@ -39,10 +36,10 @@ def visualize_class_distributions(data):
     return np.average(core_tumor), np.average(peritumoral_tissue), np.average(enhancing_tumor)
 
 
-def compute_two_splits(data_list, train_split_ratio):
+def compute_two_splits(data_list, split_ratio):
     continue_loop = True
     while continue_loop:
-        list1 = random.sample(data_list, int(train_split_ratio * len(data_list)))
+        list1 = random.sample(data_list, int(0.8 * len(data_list)))
         list2 = [i for i in data_list if i not in list1]
         list1_volumes = compute_class_volumes(list1)
         list2_volumes = compute_class_volumes(list2)
@@ -64,7 +61,7 @@ def compute_two_splits(data_list, train_split_ratio):
 
 if __name__ == "__main1__":
     patient_data_folder = ""
-    patient_data_list = sorted(glob.glob(os.path.join(patient_data_folder, "*")))[: -2]
+    patient_data_list = sorted(glob.glob(os.path.join(patient_data_folder, "*")))
     train_split, test_split = compute_two_splits(patient_data_list, 0.8)
     training_final, validation = compute_two_splits(train_split, 0.8)
     train_final_volumes = compute_class_volumes(training_final)

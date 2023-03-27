@@ -3,67 +3,38 @@ import nibabel as nib
 import numpy as np
 import os
 import glob
-import cv2
-import torchvision.transforms as transforms
+from monai.transforms.spatial.array import Spacing
+from monai.transforms.intensity.array import ScaleIntensity
 from source_code.utilities.utils import text_file_reader
 
 
-# class BTSDataset(torch.utils.data.Dataset):
-#     def __init__(self, patient_data_list_path, no_classes=4):
-#         patient_data_list = text_file_reader(patient_data_list_path)
-#         self.patient_flair_scans_list = [glob.glob(os.path.join(i, "*_flair.nii.gz"))[0] for i in patient_data_list]
-#         self.patient_t1ce_scans_list = [glob.glob(os.path.join(i, "*_t1ce.nii.gz"))[0] for i in patient_data_list]
-#         self.patient_t2_scans_list = [glob.glob(os.path.join(i, "*_t2.nii.gz"))[0] for i in patient_data_list]
-#         self.patient_seg_scans_list = [glob.glob(os.path.join(i, "*_seg.nii.gz"))[0] for i in patient_data_list]
-#         self.transform = transforms.ToTensor()
-#         self.no_classes = no_classes
-#
-#     def __len__(self):
-#         return len(self.patient_flair_scans_list)
-#
-#     def __getitem__(self, idx):
-#         t1ce_scan = self.transform(np.asarray(nib.load(self.patient_t1ce_scans_list[idx]).get_fdata())[:, :, 5: -6])
-#         t2_scan = self.transform(np.asarray(nib.load(self.patient_t2_scans_list[idx]).get_fdata())[:, :, 5: -6])
-#         flair_scan = self.transform(np.asarray(nib.load(self.patient_flair_scans_list[idx]).get_fdata())[:, :, 5: -6])
-#         seg_label = np.asarray(nib.load(self.patient_seg_scans_list[idx]).get_fdata()[:, :, 5: -6])
-#         seg_label[seg_label == 4] = 3
-#         seg_label = self.transform(seg_label)
-#         seg_label_ohe = torch.nn.functional.one_hot(seg_label.to(torch.int64), self.no_classes)
-#         seg_label_ohe = torch.moveaxis(seg_label_ohe, -1, 0)
-#         image_scans_stacked = torch.stack([t1ce_scan, t2_scan, flair_scan])
-#         return image_scans_stacked.to(torch.float32), seg_label_ohe.to(torch.float32)
-
-
-def resize_3d_image(original_img, size):
-    resized_img = [cv2.resize(original_img[:, :, i], size) for i in range(original_img.shape[2])]
-    resized_img = np.moveaxis(np.stack(resized_img), 0, -1)
-    return resized_img
-
-
 class BTSDataset(torch.utils.data.Dataset):
-    def __init__(self, patient_data_list_path, no_classes=4):
-        patient_data_list = sorted(text_file_reader(patient_data_list_path))
+    def __init__(self, patient_data_list_path, src_folder=None, no_classes=4):
+        if src_folder is not None:
+          patient_data_list = sorted(text_file_reader(os.path.join(src_folder, patient_data_list_path)))
+          patient_data_list = [os.path.join(src_folder, i) for i in patient_data_list]
+        else:
+          patient_data_list = sorted(text_file_reader(patient_data_list_path))
         self.patient_flair_scans_list = [glob.glob(os.path.join(i, "*_flair.nii.gz"))[0] for i in patient_data_list]
         self.patient_t1ce_scans_list = [glob.glob(os.path.join(i, "*_t1ce.nii.gz"))[0] for i in patient_data_list]
         self.patient_t2_scans_list = [glob.glob(os.path.join(i, "*_t2.nii.gz"))[0] for i in patient_data_list]
         self.patient_seg_scans_list = [glob.glob(os.path.join(i, "*_seg.nii.gz"))[0] for i in patient_data_list]
-        self.transform = transforms.ToTensor()
+        self.normalizer = ScaleIntensity()
         self.no_classes = no_classes
 
     def __len__(self):
         return len(self.patient_flair_scans_list)
 
     def __getitem__(self, idx):
-        t1ce_scan = self.transform(resize_3d_image(np.asarray(nib.load(self.patient_t1ce_scans_list[idx]).get_fdata())[:, :, 5: -6], (128 ,128)))
-        t2_scan = self.transform(resize_3d_image(np.asarray(nib.load(self.patient_t2_scans_list[idx]).get_fdata())[:, :, 5: -6], (128 ,128)))
-        flair_scan = self.transform(resize_3d_image(np.asarray(nib.load(self.patient_flair_scans_list[idx]).get_fdata())[:, :, 5: -6], (128 ,128)))
-        seg_label = resize_3d_image(np.asarray(nib.load(self.patient_seg_scans_list[idx]).get_fdata()[:, :, 5: -6]), (128 ,128))
-        seg_label[seg_label == 4] = 3
-        seg_label = self.transform(seg_label)
-        seg_label_ohe = torch.nn.functional.one_hot(seg_label.to(torch.int64), self.no_classes)
-        seg_label_ohe = torch.moveaxis(seg_label_ohe, -1, 0).to(torch.float32)
-        image_scans_stacked = torch.stack([t1ce_scan, t2_scan, flair_scan]).to(torch.float32)
-        return image_scans_stacked, seg_label_ohe
+        t1ce = self.normalizer(torch.Tensor(np.asarray(nib.load(self.patient_t1ce_scans_list[idx]).get_fdata())[:, :, 5: -6]))
+        t2 = self.normalizer(torch.Tensor(np.asarray(nib.load(self.patient_t2_scans_list[idx]).get_fdata())[:, :, 5: -6]))
+        flair = self.normalizer(torch.Tensor(np.asarray(nib.load(self.patient_flair_scans_list[idx]).get_fdata())[:, :, 5: -6]))
+        stacked = torch.stack([t1ce, t2, flair])
+        stacked = Spacing(pixdim=(1.875, 1.875, 1), mode="bilinear")(stacked)
+        seg_lbl = np.asarray(nib.load(self.patient_seg_scans_list[idx]).get_fdata())[:, :, 5: -6]
+        seg_lbl[seg_lbl == 4] = 3
+        seg_lbl = Spacing(pixdim=(1.875, 1.875, 1), mode="nearest")(seg_lbl[np.newaxis, :, :, :])
+        return stacked.to(torch.float32), seg_lbl.to(torch.float32)
 
 
 if __name__ == "__main1__":
@@ -73,3 +44,20 @@ if __name__ == "__main1__":
     sample_dataset = BTSDataset(folder_list)
 
 
+if __name__ == "__main2__":
+    import matplotlib.pyplot as plt
+    import yaml
+
+    config_path = "/content/drive/MyDrive/Personal/MS/Brain_Tumor_segmentaion3D/source_code/configs/overfitting_test.yaml"
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+    training_datagenerator = BTSDataset(**config["Training_Dataset"])
+    ex_img, ex_lbl = training_datagenerator[0]
+    ex_lbl_numpy = np.asarray(ex_lbl.numpy(), dtype=np.uint8)
+    np.unique(ex_lbl_numpy, return_counts=True)
+    plt.imshow(ex_lbl_numpy[0, :, :, 108] == 3)
+    ex_img_numpy = np.asarray(ex_img.numpy(), dtype=np.float32)
+    np.histogram(ex_img_numpy[2, :, :, 108])
+    plt.imshow(ex_img_numpy[2, :, :, 108])
+    plt.imshow(ex_img_numpy[1, :, :, 108])
+    plt.imshow(ex_img_numpy[0, :, :, 108])

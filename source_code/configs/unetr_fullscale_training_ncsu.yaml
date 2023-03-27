@@ -1,22 +1,22 @@
-save_folder: /content/Experiemnts/test #Experiments/test
+save_folder: /content/Experiemnts/Baseline_unetr #Experiments/test
 
 Training_Dataset:
   #patient_data_list_path: "dataset/lists/sample_100.txt"
-  patient_data_list_path: "dataset/lists/sample_100.txt"
+  patient_data_list_path: "Brain_Tumor_segmentaion3D/dataset/lists/train_val_test_splits/train_split.txt"
   no_classes: 4
-  src_folder: "/content/drive/MyDrive/ECE542/Brain_Tumor_segmentaion3D"
+  src_folder: "/content/drive/MyDrive/ECE542"
 
 Validation_Dataset:
   #patient_data_list_path: "dataset/lists/sample_100.txt"
-  patient_data_list_path: "dataset/lists/sample_100.txt"
+  patient_data_list_path: "Brain_Tumor_segmentaion3D/dataset/lists/train_val_test_splits/val_split.txt"
   no_classes: 4
-  src_folder: "/content/drive/MyDrive/ECE542/Brain_Tumor_segmentaion3D"
+  src_folder: "/content/drive/MyDrive/ECE542"
 
 Test_Dataset:
   #patient_data_list_path: "dataset/lists/sample_100.txt"
-  patient_data_list_path: "dataset/lists/sample_100.txt"
+  patient_data_list_path: "Brain_Tumor_segmentaion3D/dataset/lists/train_val_test_splits/test_split.txt"
   no_classes: 4
-  src_folder: "/content/drive/MyDrive/ECE542/Brain_Tumor_segmentaion3D"
+  src_folder: "/content/drive/MyDrive/ECE542"
 
 Model:
   in_channels: 3
@@ -35,12 +35,12 @@ Model:
 Trainer:
   number_of_epochs: 100
   loss:
-    path: monai.losses.DiceLoss 
+    path: monai.losses.DiceFocalLoss 
     params:
       include_background: True
       to_onehot_y: True
       sigmoid: False
-      softmax: True #False
+      softmax: True
       #other_act: None
       squared_pred: False
       jaccard: False
@@ -48,10 +48,11 @@ Trainer:
       smooth_nr: 1e-05
       smooth_dr: 1e-05
       batch: False
-      #ce_weight: None
-      #lambda_dice: 1.0
-      #lambda_ce: 1.0
-      
+      gamma: 2.0
+      #focal_weight=None
+      lambda_dice: 1.0
+      lambda_focal: 1.0
+
   optimizer:
     path: torch.optim.AdamW
     params:

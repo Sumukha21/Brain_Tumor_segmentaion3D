@@ -3,8 +3,8 @@ backcall==0.2.0
 certifi==2022.12.7
 charset-normalizer==2.1.1
 colorama==0.4.6
-contourpy
-cycler
+contourpy @ file:///D:/bld/contourpy_1673633798610/work
+cycler @ file:///home/conda/feedstock_root/build_artifacts/cycler_1635519461629/work
 decorator==5.1.1
 einops==0.6.0
 executing==1.2.0
@@ -19,7 +19,7 @@ Jinja2==3.1.2
 jupyterlab-widgets==3.0.6
 kiwisolver
 MarkupSafe==2.1.2
-matplotlib 
+matplotlib
 matplotlib-inline==0.1.6
 monai==1.0.1
 mpmath==1.3.0
@@ -30,7 +30,7 @@ numpy
 packaging
 parso==0.8.3
 pickleshare==0.7.5
-Pillow 
+Pillow
 prompt-toolkit==3.0.38
 pure-eval==0.2.2
 Pygments==2.14.0
@@ -46,6 +46,8 @@ scipy==1.10.1
 six
 stack-data==0.6.2
 sympy==1.11.1
+torch==2.0.0+cu118
+torchvision==0.15.1+cu118
 tornado
 tqdm==4.65.0
 traitlets==5.9.0
