@@ -1,5 +1,6 @@
 from tqdm import tqdm
 import torch
+from torch.utils.tensorboard import SummaryWriter
 import os
 import numpy as np
 from source_code.utilities.utils import instantiate_attribute, check_path
@@ -19,6 +20,7 @@ class Trainer:
         self.optimizer = instantiate_attribute(optimizer["path"])(self.model.parameters(), **optimizer["params"])
         self.best_model_weights = None
         self.weights_save_folder = weights_save_folder
+        self.writer = SummaryWriter(weights_save_folder)
         check_path(self.weights_save_folder)
 
     def __call__(self, training_dataloader, validation_dataloader):
@@ -41,11 +43,10 @@ class Trainer:
                     image = image.cuda().to(device)
                     label = label.cuda().to(device)
                     probabilities = self.model(image)
-                    image = None
-                    torch.cuda.empty_cache()
                     validation_loss.append(self.loss(probabilities, label).cpu())
-                    del probabilities, label
             print("Average validation loss: ", np.average(validation_loss))
+            self.writer.add_scalar('Loss/train', np.average(training_loss), i)
+            self.writer.add_scalar('Loss/validation', np.average(validation_loss), i)
             if np.average(validation_loss) < average_val_loss:
                 self.best_model_weights = self.model.state_dict()
                 average_val_loss = np.average(validation_loss)

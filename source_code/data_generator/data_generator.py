@@ -30,10 +30,12 @@ class BTSDataset(torch.utils.data.Dataset):
         t2 = self.normalizer(torch.Tensor(np.asarray(nib.load(self.patient_t2_scans_list[idx]).get_fdata())[:, :, 5: -6]))
         flair = self.normalizer(torch.Tensor(np.asarray(nib.load(self.patient_flair_scans_list[idx]).get_fdata())[:, :, 5: -6]))
         stacked = torch.stack([t1ce, t2, flair])
-        stacked = Spacing(pixdim=(1.875, 1.875, 1), mode="bilinear")(stacked)
+        # stacked = Spacing(pixdim=(1.875, 1.875, 1), mode="bilinear")(stacked)
+        stacked = Spacing(pixdim=(2.51, 2.51, 1), mode="bilinear")(stacked)
         seg_lbl = np.asarray(nib.load(self.patient_seg_scans_list[idx]).get_fdata())[:, :, 5: -6]
         seg_lbl[seg_lbl == 4] = 3
-        seg_lbl = Spacing(pixdim=(1.875, 1.875, 1), mode="nearest")(seg_lbl[np.newaxis, :, :, :])
+        seg_lbl = Spacing(pixdim=(2.51, 2.51, 1), mode="nearest")(seg_lbl[np.newaxis, :, :, :])
+        # seg_lbl = Spacing(pixdim=(1.875, 1.875, 1), mode="nearest")(seg_lbl[np.newaxis, :, :, :])
         return stacked.to(torch.float32), seg_lbl.to(torch.float32)
 
 

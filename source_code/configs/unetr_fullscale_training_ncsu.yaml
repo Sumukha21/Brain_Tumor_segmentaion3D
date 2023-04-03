@@ -1,27 +1,28 @@
-save_folder: /content/Experiemnts/Baseline_unetr #Experiments/test
+save_folder: Experiments/Baseline_unetr/DiceFocal  #Experiments/test
 
 Training_Dataset:
   #patient_data_list_path: "dataset/lists/sample_100.txt"
   patient_data_list_path: "Brain_Tumor_segmentaion3D/dataset/lists/train_val_test_splits/train_split.txt"
   no_classes: 4
-  src_folder: "/content/drive/MyDrive/ECE542"
+  src_folder: "C:/Users/sumuk/OneDrive/Desktop/NCSU_related/Courses_and_stuff/Courses_and_stuff/NCSU_courses_and_books/ECE_542/FinalProj/"
 
 Validation_Dataset:
   #patient_data_list_path: "dataset/lists/sample_100.txt"
   patient_data_list_path: "Brain_Tumor_segmentaion3D/dataset/lists/train_val_test_splits/val_split.txt"
   no_classes: 4
-  src_folder: "/content/drive/MyDrive/ECE542"
+  src_folder: "C:/Users/sumuk/OneDrive/Desktop/NCSU_related/Courses_and_stuff/Courses_and_stuff/NCSU_courses_and_books/ECE_542/FinalProj/"
 
 Test_Dataset:
   #patient_data_list_path: "dataset/lists/sample_100.txt"
   patient_data_list_path: "Brain_Tumor_segmentaion3D/dataset/lists/train_val_test_splits/test_split.txt"
   no_classes: 4
-  src_folder: "/content/drive/MyDrive/ECE542"
+  src_folder: "C:/Users/sumuk/OneDrive/Desktop/NCSU_related/Courses_and_stuff/Courses_and_stuff/NCSU_courses_and_books/ECE_542/FinalProj/"
 
 Model:
   in_channels: 3
   out_channels: 4
-  img_size: [128, 128, 144]
+#  img_size: [128, 128, 144]
+  img_size: [96, 96, 144]
   feature_size: 16
   hidden_size: 768
   mlp_dim: 3072
