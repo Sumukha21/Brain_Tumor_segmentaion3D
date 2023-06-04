@@ -21,5 +21,9 @@ Given the MRI scans, we propose to localize and classify regions of the scans in
     - python source_code/main.py 
     - The path to the config file for training needs to be provided (Will be added as a command line argument in future update)
     - Sample configs for training (Unetr and Vnet available) can be used as reference for custom training pipelines (see source_code/configs/*)
+## Sample Visualization:
+[![Point cloud of ground truth of 3D brain tumor sub regions](https://drive.google.com/uc?export=download&id=1MMvlCRwzBU9CEi1rfEfZ10obI0J4BAHy)](https://drive.google.com/file/d/1MMvlCRwzBU9CEi1rfEfZ10obI0J4BAHy/view)
+[![Point cloud of Model Prediction of 3D brain tumor sub regions](https://drive.google.com/uc?export=download&id=1MMvlCRwzBU9CEi1rfEfZ10obI0J4BAHy)](https://drive.google.com/file/d/1MMvlCRwzBU9CEi1rfEfZ10obI0J4BAHy/view)
+
 
 
